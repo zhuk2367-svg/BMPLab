@@ -1,0 +1,13 @@
+gcc -std=c99 -o image_craft src/*.c -lm
+image_craft lenna.bmp output.bmp -crop 800 600 -gs -blur 0.5
+
+Функция (фильтр)	Обозначение в командной строке	Параметры	Пример использования
+Crop - обрезка изображения	-crop	width height (целые числа)	-crop 800 600
+Grayscale - оттенки серого	-gs	нет	-gs
+Negative - негатив	-neg	нет	-neg
+Sharpening - повышение резкости	-sharp	нет	-sharp
+Edge Detection - выделение границ	-edge	threshold (вещественное число)	-edge 0.1
+Median filter - медианный фильтр	-med	window_size (целое число, нечетное)	-med 7
+Gaussian Blur - размытие по Гауссу	-blur	sigma (вещественное число)	-blur 0.5
+Crystallize - кристаллизация (дополнительный)	-crystallize	cell_size (целое число)	-crystallize 50
+Glass - стеклянный эффект (дополнительный)	-glass	distortion (вещественное число)	-glass 0.3
