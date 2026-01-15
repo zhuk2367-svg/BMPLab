@@ -241,6 +241,170 @@ Image* filter_apply_median(const Image* image, int window) {
     return result;
 }
 
+// Гауссово размытие (Gaussian Blur)
+// Плавное размытие изображения
+Image* filter_apply_gaussian_blur(const Image* image, float sigma) {
+    if (sigma <= 0) {
+        return image_clone(image);  // Без размытия
+    }
+    
+    // Вычисление радиуса ядра (3σ покрывает 99.7% распределения)
+    int radius = (int)ceil(3 * sigma);
+    int size = 2 * radius + 1;  // Размер ядра
+    
+    // Создание одномерного ядра Гаусса
+    float* kernel = (float*)malloc(size * sizeof(float));
+    if (!kernel) {
+        return NULL;
+    }
+    
+    // Вычисление значений Гауссовой функции
+    float sum = 0.0f;
+    for (int i = 0; i < size; i++) {
+        int x = i - radius;
+        kernel[i] = exp(-(x * x) / (2 * sigma * sigma));
+        sum += kernel[i];
+    }
+    
+    // Нормализация ядра (сумма весов = 1)
+    for (int i = 0; i < size; i++) {
+        kernel[i] /= sum;
+    }
+    
+    // Разделяемая свертка: сначала по горизонтали
+    Image* temp = image_create(image->width, image->height);
+    if (!temp) {
+        free(kernel);
+        return NULL;
+    }
+    
+    // Горизонтальное размытие
+    for (int y = 0; y < image->height; y++) {
+        for (int x = 0; x < image->width; x++) {
+            Color sum = {0, 0, 0};
+            
+            for (int i = 0; i < size; i++) {
+                int dx = i - radius;
+                Color neighbor = image_get_pixel_clamped(image, x + dx, y);
+                float weight = kernel[i];
+                
+                sum.r += neighbor.r * weight;
+                sum.g += neighbor.g * weight;
+                sum.b += neighbor.b * weight;
+            }
+            
+            image_set_pixel(temp, x, y, sum);
+        }
+    }
+    
+    // Вертикальное размытие
+    Image* result = image_create(image->width, image->height);
+    if (!result) {
+        free(kernel);
+        image_free(temp);
+        return NULL;
+    }
+    
+    for (int y = 0; y < image->height; y++) {
+        for (int x = 0; x < image->width; x++) {
+            Color sum = {0, 0, 0};
+            
+            for (int i = 0; i < size; i++) {
+                int dy = i - radius;
+                Color neighbor = image_get_pixel_clamped(temp, x, y + dy);
+                float weight = kernel[i];
+                
+                sum.r += neighbor.r * weight;
+                sum.g += neighbor.g * weight;
+                sum.b += neighbor.b * weight;
+            }
+            
+            image_set_pixel(result, x, y, sum);
+        }
+    }
+    
+    free(kernel);
+    image_free(temp);
+    
+    return result;
+}
+
+// Фильтр кристаллизации (Crystallize)
+// Создает эффект разбиения на ячейки с однородным цветом
+Image* filter_apply_crystallize(const Image* image, int cell_size) {
+    if (cell_size <= 1) {
+        return image_clone(image);  // Без эффекта
+    }
+    
+    Image* result = image_create(image->width, image->height);
+    if (!result) {
+        return NULL;
+    }
+    
+    srand(time(NULL));  // Инициализация генератора случайных чисел
+    
+    // Разбиваем изображение на ячейки
+    for (int cell_y = 0; cell_y < image->height; cell_y += cell_size) {
+        for (int cell_x = 0; cell_x < image->width; cell_x += cell_size) {
+            // Выбираем случайный пиксель в ячейке как эталон
+            int offset_x = rand() % cell_size;
+            int offset_y = rand() % cell_size;
+            
+            int ref_x = cell_x + offset_x;
+            int ref_y = cell_y + offset_y;
+            
+            // Ограничиваем координаты границами изображения
+            if (ref_x >= image->width) ref_x = image->width - 1;
+            if (ref_y >= image->height) ref_y = image->height - 1;
+            
+            Color reference = image_get_pixel(image, ref_x, ref_y);
+            
+            // Заполняем всю ячейку эталонным цветом
+            for (int y = cell_y; y < cell_y + cell_size && y < image->height; y++) {
+                for (int x = cell_x; x < cell_x + cell_size && x < image->width; x++) {
+                    image_set_pixel(result, x, y, reference);
+                }
+            }
+        }
+    }
+    
+    return result;
+}
+
+// Стеклянный фильтр (Glass Filter)
+// Создает эффект просмотра через текстурированное стекло
+Image* filter_apply_glass(const Image* image, float distortion) {
+    Image* result = image_create(image->width, image->height);
+    if (!result) {
+        return NULL;
+    }
+    
+    srand(time(NULL));  // Инициализация генератора случайных чисел
+    
+    for (int y = 0; y < image->height; y++) {
+        for (int x = 0; x < image->width; x++) {
+            // Генерируем случайное смещение
+            float dx = (rand() / (float)RAND_MAX - 0.5f) * 2.0f * distortion;
+            float dy = (rand() / (float)RAND_MAX - 0.5f) * 2.0f * distortion;
+            
+            // Вычисляем координаты источника с учетом смещения
+            int source_x = (int)(x + dx * 10);
+            int source_y = (int)(y + dy * 10);
+            
+            // Ограничиваем координаты
+            if (source_x < 0) source_x = 0;
+            if (source_x >= image->width) source_x = image->width - 1;
+            if (source_y < 0) source_y = 0;
+            if (source_y >= image->height) source_y = image->height - 1;
+            
+            // Берем цвет из смещенной позиции
+            Color color = image_get_pixel(image, source_x, source_y);
+            image_set_pixel(result, x, y, color);
+        }
+    }
+    
+    return result;
+}
 
 // Общая функция применения фильтра
 // Вызывает соответствующую функцию фильтра по типу
@@ -258,8 +422,13 @@ Image* filter_apply(const Filter* filter, const Image* image) {
             return filter_apply_edge_detection(image, filter->param3);
         case FILTER_MEDIAN:
             return filter_apply_median(image, filter->param1);
+        case FILTER_GAUSSIAN_BLUR:
+            return filter_apply_gaussian_blur(image, filter->param3);
+        case FILTER_CRYSTALLIZE:
+            return filter_apply_crystallize(image, filter->param1);
+        case FILTER_GLASS:
+            return filter_apply_glass(image, filter->param3);
         default:
             return NULL;  // Неизвестный тип фильтра
     }
-
 }
