@@ -1,7 +1,9 @@
 // pipeline.c
 #include "pipeline.h"
 #include <stdlib.h>
+//СОЗДАНИЕ И УДАЛЕНИЕ ПАЙПЛАЙНА
 
+//*создает новый пайплайн фильтров
 Pipeline* pipeline_create(void) {
     Pipeline* pipeline = (Pipeline*)malloc(sizeof(Pipeline));
     if (!pipeline) {
@@ -14,7 +16,7 @@ Pipeline* pipeline_create(void) {
     
     return pipeline;
 }
-
+//*освобождает память
 void pipeline_free(Pipeline* pipeline) {
     if (!pipeline) return;
     
@@ -28,6 +30,9 @@ void pipeline_free(Pipeline* pipeline) {
     free(pipeline);
 }
 
+//ДОБАВЛЕНИЕ ФИЛТРОВ
+
+//*добавление фильтра в конец пайплайна
 void pipeline_add_filter(Pipeline* pipeline, FilterType type, int param1, int param2, float param3) {
     if (!pipeline) return;
     
@@ -51,6 +56,8 @@ void pipeline_add_filter(Pipeline* pipeline, FilterType type, int param1, int pa
     pipeline->count++;
 }
 
+//ПРИМЕНЕНИЕ ПАЙПЛАЙНА К ИЗОБРАЖЕНИЮ
+//*применяет все фильтры к изображению 
 Image* pipeline_apply(Pipeline* pipeline, const Image* image) {
     if (!pipeline || !image) return NULL;
     
@@ -71,4 +78,5 @@ Image* pipeline_apply(Pipeline* pipeline, const Image* image) {
     }
     
     return current;
+
 }
