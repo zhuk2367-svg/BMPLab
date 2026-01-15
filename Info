@@ -1,5 +1,5 @@
 "cmd"
-gcc -std=c99 -o image_craft src/*.c -lm
+gcc -std=c99 -o image_craft body_code/*.c -lm
 image_craft lenna.bmp output.bmp -crop 800 600 -gs -blur 0.5
 
 Функция (фильтр)	Обозначение в командной строке	Параметры	Пример использования
@@ -13,3 +13,4 @@ Gaussian Blur - размытие по Гауссу	-blur	sigma (веществе
 Crystallize - кристаллизация (дополнительный)	-crystallize	cell_size (целое число)	-crystallize 50
 
 Glass - стеклянный эффект (дополнительный)	-glass	distortion (вещественное число)	-glass 0.3
+
