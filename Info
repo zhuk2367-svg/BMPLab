@@ -1,3 +1,4 @@
+"cmd"
 gcc -std=c99 -o image_craft src/*.c -lm
 image_craft lenna.bmp output.bmp -crop 800 600 -gs -blur 0.5
 
@@ -10,4 +11,5 @@ Edge Detection - выделение границ	-edge	threshold (веществ
 Median filter - медианный фильтр	-med	window_size (целое число, нечетное)	-med 7
 Gaussian Blur - размытие по Гауссу	-blur	sigma (вещественное число)	-blur 0.5
 Crystallize - кристаллизация (дополнительный)	-crystallize	cell_size (целое число)	-crystallize 50
+
 Glass - стеклянный эффект (дополнительный)	-glass	distortion (вещественное число)	-glass 0.3
