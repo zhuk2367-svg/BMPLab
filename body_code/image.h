@@ -27,4 +27,5 @@ Color image_get_pixel_clamped(const Image* image, int x, int y);
 bool image_is_valid_coords(const Image* image, int x, int y);
 int image_get_index(const Image* image, int x, int y);
 
-#endif // IMAGE_H
+
+#endif 
