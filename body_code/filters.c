@@ -184,7 +184,7 @@ Image* filter_apply_edge_detection(const Image* image, float threshold) {
 }
 
 // Медианный фильтр (Median Filter)
-// Удаляет шум "соль-перец", сохраняя границы
+// Удаляет шум, сохраняя границы
 Image* filter_apply_median(const Image* image, int window) {
     Image* result = image_create(image->width, image->height);
     if (!result) {
@@ -261,4 +261,5 @@ Image* filter_apply(const Filter* filter, const Image* image) {
         default:
             return NULL;  // Неизвестный тип фильтра
     }
+
 }
