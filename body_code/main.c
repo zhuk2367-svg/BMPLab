@@ -18,6 +18,9 @@ void print_help() {
     printf("  -sharp                       Повышение резкости\n");
     printf("  -edge <threshold>            Выделение границ\n");
     printf("  -med <window_size>           Медианный фильтр\n");
+    printf("  -blur <sigma>                Размытие по Гауссу\n");
+    printf("  -crystallize <cell_size>     Кристаллизация (дополнительный)\n");
+    printf("  -glass <distortion>          Стеклянный эффект (дополнительный)\n");
 }
 
 int main(int argc, char* argv[]) {
@@ -71,6 +74,18 @@ int main(int argc, char* argv[]) {
         else if (strcmp(argv[i], "-med") == 0 && i + 1 < argc) {
             int window = atoi(argv[++i]);  // Размер окна медианного фильтра
             pipeline_add_filter(pipeline, FILTER_MEDIAN, window, 0, 0);
+        }
+        else if (strcmp(argv[i], "-blur") == 0 && i + 1 < argc) {
+            float sigma = atof(argv[++i]);  // Сигма для Гауссова размытия
+            pipeline_add_filter(pipeline, FILTER_GAUSSIAN_BLUR, 0, 0, sigma);
+        }
+        else if (strcmp(argv[i], "-crystallize") == 0 && i + 1 < argc) {
+            int cell_size = atoi(argv[++i]);  // Размер ячейки кристаллизации
+            pipeline_add_filter(pipeline, FILTER_CRYSTALLIZE, cell_size, 0, 0);
+        }
+        else if (strcmp(argv[i], "-glass") == 0 && i + 1 < argc) {
+            float distortion = atof(argv[++i]);  // Уровень искажения стеклянного эффекта
+            pipeline_add_filter(pipeline, FILTER_GLASS, 0, 0, distortion);
         }
         else {
             fprintf(stderr, "Неизвестный фильтр или неверные параметры: %s\n", argv[i]);
